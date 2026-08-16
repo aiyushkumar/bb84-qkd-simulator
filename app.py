@@ -89,3 +89,13 @@ if st.sidebar.button("Run Simulation"):
             ax.legend()
             
             st.pyplot(fig)
+
+# Footer
+st.markdown(
+    """
+    <div style='text-align: center; color: gray; padding-top: 50px; padding-bottom: 20px; font-size: 14px;'>
+        Developed by Aiyush Kumar
+    </div>
+    """,
+    unsafe_allow_html=True
+)
