@@ -9,6 +9,28 @@ from src.experiments import run_experiment, run_statistical_experiments
 
 st.set_page_config(page_title="BB84 QKD Simulator", layout="wide")
 
+@st.cache_data(show_spinner=False)
+def run_single_cached_experiment(num_qubits, with_eve, exp_index):
+    """
+    Run a single experiment and cache its result. 
+    exp_index ensures we can cache multiple distinct random experiments.
+    """
+    result = run_experiment(num_qubits, with_eve, seed=None)
+    return result['qber']
+
+def run_statistical_experiments_with_progress(num_qubits, num_experiments, with_eve, status_text, progress_bar, label):
+    """
+    Run statistical experiments iteratively updating the UI progress bar.
+    Leverages cached single experiments for speed on reruns.
+    """
+    results = []
+    for i in range(num_experiments):
+        status_text.text(f"Running statistical analysis ({label})... Experiment {i+1}/{num_experiments}")
+        qber = run_single_cached_experiment(num_qubits, with_eve, i)
+        results.append(qber)
+        progress_bar.progress((i + 1) / num_experiments)
+    return results
+
 st.title("BB84 Quantum Key Distribution Simulator")
 st.markdown("An educational simulator demonstrating quantum key distribution and the intercept-resend attack.")
 
@@ -64,23 +86,39 @@ if st.sidebar.button("Run Simulation"):
         st.dataframe(df.style.apply(highlight_matching, axis=1), use_container_width=True)
         
         st.subheader("Sifted Keys")
-        st.text(f"Alice's Key: {result['alice_key']}")
-        st.text(f"Bob's Key:   {result['bob_key']}")
+        
+        def format_key_preview(key_array, max_len=30):
+            key_str = "".join(map(str, key_array))
+            if len(key_str) > max_len:
+                return key_str[:max_len] + "..."
+            return key_str
+            
+        st.text(f"Alice's Key Preview: {format_key_preview(result['alice_key'])}")
+        st.text(f"Bob's Key Preview:   {format_key_preview(result['bob_key'])}")
+        st.caption("Keys shown above are truncated previews for demonstration purposes.")
         
         st.subheader("Statistical Demonstration")
         st.markdown(
-            "Below is a demonstration of the QBER distribution over 50 experiments of 100 qubits each, "
+            "Below is a demonstration of the QBER distribution over 20 experiments of 100 qubits each, "
             "comparing scenarios with and without Eve."
         )
         
         fig, ax = plt.subplots(figsize=(10, 4))
         
-        # Run stats
-        with st.spinner("Running statistical analysis..."):
-            no_eve_stats = run_statistical_experiments(100, 50, False)
-            eve_stats = run_statistical_experiments(100, 50, True)
-            
-            ax.hist([no_eve_stats, eve_stats], bins=15, label=['Without Eve', 'With Eve'], color=['blue', 'red'], alpha=0.7)
+        # Run stats with progress indicator
+        status_text = st.empty()
+        progress_bar = st.progress(0)
+        
+        no_eve_stats = run_statistical_experiments_with_progress(100, 20, False, status_text, progress_bar, "Without Eve")
+        
+        progress_bar.progress(0) # reset for the next batch
+        
+        eve_stats = run_statistical_experiments_with_progress(100, 20, True, status_text, progress_bar, "With Eve")
+        
+        progress_bar.empty()
+        status_text.empty()
+        
+        ax.hist([no_eve_stats, eve_stats], bins=15, label=['Without Eve', 'With Eve'], color=['blue', 'red'], alpha=0.7)
             ax.axvline(threshold, color='black', linestyle='dashed', linewidth=2, label=f'Threshold ({threshold*100}%)')
             
             ax.set_xlabel("Quantum Bit Error Rate (QBER)")
