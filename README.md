@@ -4,6 +4,10 @@ An educational but technically rigorous simulator of the **BB84 Quantum Key Dist
 
 This project models the quantum state preparation, transmission, measurement, and classical sifting process of BB84. It demonstrates the effects of a potential eavesdropper (Eve) executing an **intercept-resend attack**, statistically revealing her presence via the Quantum Bit Error Rate (QBER).
 
+## Live Demo
+Live Demo: To be deployed on Streamlit Community Cloud. 
+The application entry point for deployment is `app.py`.
+
 ## Features
 - **Alice**: Random bit generation, basis selection, and quantum state preparation.
 - **Bob**: Random basis selection and measurement.
