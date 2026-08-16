@@ -119,14 +119,14 @@ if st.sidebar.button("Run Simulation"):
         status_text.empty()
         
         ax.hist([no_eve_stats, eve_stats], bins=15, label=['Without Eve', 'With Eve'], color=['blue', 'red'], alpha=0.7)
-            ax.axvline(threshold, color='black', linestyle='dashed', linewidth=2, label=f'Threshold ({threshold*100}%)')
-            
-            ax.set_xlabel("Quantum Bit Error Rate (QBER)")
-            ax.set_ylabel("Frequency")
-            ax.set_title("QBER Distribution (Intercept-Resend Attack)")
-            ax.legend()
-            
-            st.pyplot(fig)
+        ax.axvline(threshold, color='black', linestyle='dashed', linewidth=2, label=f'Threshold ({threshold*100}%)')
+        
+        ax.set_xlabel("Quantum Bit Error Rate (QBER)")
+        ax.set_ylabel("Frequency")
+        ax.set_title("QBER Distribution (Intercept-Resend Attack)")
+        ax.legend()
+        
+        st.pyplot(fig)
 
 # Footer
 st.markdown(
